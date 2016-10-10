@@ -19,6 +19,7 @@
             display: flex;
             flex: 1;
             align-items: center;
+            background-color: #000;
 
             video {
                 background-color: #000;
@@ -42,7 +43,7 @@
                 background-size: 20px;
                 background-repeat: no-repeat;
                 background-position: center;
-                transition: .3s;
+                transition: background-color .3s;
 
                 &:hover {
                     background-color: #e6e9f0;
@@ -72,13 +73,22 @@
                 border: 1px solid $color-border;
                 cursor: pointer;
                 box-sizing: border-box;
-                transition: .3s;
+                transition: box-shadow .3s;
 
                 &:hover {
                     box-shadow: 0 0 3px $color-over;
                 }
             }
         }
+    }
+
+    .fade-enter-active, .fade-leave-active {
+        transition: opacity .5s
+    }
+
+    .fade-enter, .fade-leave-active {
+        transition: opacity .5s;
+        opacity: 0
     }
 
     .v-tool-full {
@@ -178,7 +188,6 @@
         height: 100%;
         line-height: 30px;
         text-align: center;
-        float: left;
         color: #999999;
     }
 
@@ -272,33 +281,37 @@
 <template>
     <div id="vue-video" ref="box">
         <div class="v-mask" ref="mask" @click="play" @dblclick="screen" @mousemove="tool">
-            <video preload="auto" src="http://cdn.clannader.com/onepunchman-01" ref="video"></video>
+            <video preload="auto" ref="video">
+                <source v-for="data in source" :src="data.src" :type="data.type">
+            </video>
             <div class="v-load" ref="load"></div>
             <div class="v-waiting" ref="waiting"></div>
         </div>
-        <div v-show="ctrl.show" :class="[ 'v-tool', ctrl.isFull ? 'v-tool-full' : '' ]">
-            <button :class="[ ctrl.playing ? 'v-btn-playing' : 'v-btn-paused' ]" @click="play"></button>
-            <div class="v-progress-bar">
-                <div class="v-range" @click="jump">
-                    <span class="v-loading" :style="{ width : datas.loading + '%' }"></span>
-                    <span class="v-current" :style="{ width : datas.playing + '%' }">
+        <transition name="fade">
+            <div v-show="ctrl.show" :class="[ 'v-tool', ctrl.isFull ? 'v-tool-full' : '' ]">
+                <button :class="[ ctrl.playing ? 'v-btn-playing' : 'v-btn-paused' ]" @click="play"></button>
+                <div class="v-progress-bar">
+                    <div class="v-range" @click="jump">
+                        <span class="v-loading" :style="{ width : datas.loading + '%' }"></span>
+                        <span class="v-current" :style="{ width : datas.playing + '%' }">
                         <em class="v-dot"></em>
                     </span>
+                    </div>
                 </div>
-            </div>
-            <div class="v-tool-time">
-                <span>{{ time.cur }}</span>/<span>{{ time.all }}</span>
-            </div>
-            <button :class="[ 'v-btn-voice', ctrl.isMuted ? 'v-btn-silent' : 'v-btn-volume' ]" @click="muted"></button>
-            <div class="v-voice-bar">
-                <div class="v-range" @click="volume">
+                <div class="v-tool-time">
+                    <span>{{ time.cur }}</span>/<span>{{ time.all }}</span>
+                </div>
+                <button :class="[ 'v-btn-voice', ctrl.isMuted ? 'v-btn-silent' : 'v-btn-volume' ]" @click="muted"></button>
+                <div class="v-voice-bar">
+                    <div class="v-range" @click="volume">
                     <span class="v-current" :style="{ height : voice + '%' }">
                         <em class="v-dot"></em>
                     </span>
+                    </div>
                 </div>
+                <button class="v-screen" @click="screen"></button>
             </div>
-            <button class="v-screen" @click="screen"></button>
-        </div>
+        </transition>
     </div>
 </template>
 
@@ -309,6 +322,10 @@
             voice : {
                 default : 60,
                 type : String
+            },
+            source : {
+                default : null,
+                required : true
             }
         },
         watch: {
@@ -392,13 +409,12 @@
             tool () {
                 if (this.ctrl.isFull) {
                     var vm = this;
-                    clearTimeout(vm.timer);
-                    vm.timer = null;
                     this.ctrl.show = true;
                     this.ctrl.timer = setTimeout(function () {
-                        vm.ctrl.show = false;
-                        clearTimeout(vm.timer);
-                        vm.timer = null;
+                        if (vm.ctrl.isFull) {
+                            vm.ctrl.show = false;
+                        }
+                        clearTimeout(vm.ctrl.timer);
                     }, 5000)
                 }
             },
@@ -411,16 +427,20 @@
             },
             screenToggle() {
                 var vm = this;
-                this.ctrl.isFull = this.checkIsFullScreen();
+                this.ctrl.isFull = this.checkIsFullScreen() === true;
                 this.ctrl.show = true;
                 this.$refs.box.style.width = "100%";
                 this.$refs.box.style.height = "100%";
                 this.$refs.mask.style.width = "100%";
-                this.$refs.mask.style.height = "100%";
                 if (this.ctrl.isFull) {
                     this.ctrl.timer = setTimeout(function () {
-                        vm.ctrl.show = false;
+                        if (vm.ctrl.isFull) {
+                            vm.ctrl.show = false;
+                        }
                     }, 5000)
+                } else {
+                    clearTimeout(vm.ctrl.timer);
+                    vm.ctrl.show = true;
                 }
             },
             exitFullScreen() {
@@ -527,10 +547,10 @@
             video.onprogress = function() {
                 // console.log('onprogress : 正在下载视频');
                 let bf = this.buffered;
-
                 if (this.duration > 0) {
                     vm.datas.loading = bf.end(bf.length - 1) / this.duration * 100
                 }
+                console.log(vm.datas.loading);
             };
 
             video.onended = function () {
