@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>Document</title>
+    <style>
+        canvas {
+            display: block;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+<div style="border: solid 1px #ccc; padding: 10px; text-align: center;">
+    <video id="video" width="320" controls="true">
+        <source src="http://vjs.zencdn.net/v/oceans.mp4">
+    </video><br/>
+    <button onclick="shoot()" style="width: 64px;border: solid 2px #ccc;">Capture</button><br/>
+    <div id="output" style="display: inline-block; top: 4px; position: relative ;border: dotted 1px #ccc; padding: 2px;"></div>
+</div>
+<script>
+    var videoId = 'video';
+    var scaleFactor = 0.25;
+    var snapshots = [];
+
+    function shoot(){
+        var video  = document.getElementById(videoId);
+        var output = document.getElementById('output');
+        var canvas = capture(video, scaleFactor);
+
+        snapshots.push(canvas);
+        output.innerHTML = '';
+        for(var i=0; i<snapshots.length; i++){
+            output.appendChild(snapshots[i]);
+        }
+    }
+
+    function capture(video, scaleFactor) {
+        if(scaleFactor == null){
+            scaleFactor = 1;
+        }
+        var w = video.videoWidth * scaleFactor;
+        var h = video.videoHeight * scaleFactor;
+        var canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h);
+        return canvas;
+    }
+</script>
+</body>
+</html>

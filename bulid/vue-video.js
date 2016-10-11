@@ -656,7 +656,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            vm.$refs.load.style.display = "none";
 	            vm.$refs.waiting.style.display = "none";
 	        };
-	
 	        video.onwaiting = function () {
 	            // console.log("onwaiting : 播放过程中开始缓冲");
 	            vm.$refs.waiting.style.display = "block";
