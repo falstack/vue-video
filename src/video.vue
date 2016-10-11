@@ -1,4 +1,4 @@
-<style lang="sass" rel="scss" scoped>
+<style lang="sass" rel="scss">
     $color-border : #e5e9ef;
     $color-over : #00a1d6;
     $color-load : #8adced;
@@ -12,6 +12,7 @@
         flex-direction: column;
         border-bottom: 1px solid $color-border;
         position: relative;
+        font-family: "Microsoft YaHei",Arial,Helvetica,sans-serif;
 
         .v-mask {
             position: relative;
@@ -44,6 +45,9 @@
                 background-repeat: no-repeat;
                 background-position: center;
                 transition: background-color .3s;
+                outline: none;
+                border: none;
+                cursor: pointer;
 
                 &:hover {
                     background-color: #e6e9f0;
@@ -192,6 +196,7 @@
     }
 
     .v-progress-bar {
+        box-sizing: border-box;
         height: 100%;
         padding: 12px 0 12px 10px;
         flex: 1;
@@ -550,7 +555,6 @@
                 if (this.duration > 0) {
                     vm.datas.loading = bf.end(bf.length - 1) / this.duration * 100
                 }
-                console.log(vm.datas.loading);
             };
 
             video.onended = function () {
