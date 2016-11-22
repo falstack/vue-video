@@ -1,7 +1,9 @@
-<style lang="sass" rel="scss">
+<style lang="scss" rel="scss" scoped>
     $color-border : #e5e9ef;
     $color-over : #00a1d6;
     $color-load : #8adced;
+    $tool-height : 40px;
+    $tool-btn-width : 40px;
 
     #vue-video {
         overflow: hidden;
@@ -30,7 +32,7 @@
         }
 
         .v-tool {
-            height: 30px;
+            height: $tool-height;
             background-color: #fff;
             border-left: 1px solid $color-border;
             border-right: 1px solid $color-border;
@@ -38,7 +40,7 @@
             display: flex;
 
             button {
-                width: 40px;
+                width: $tool-btn-width;
                 height: 100%;
                 background-color: #fff;
                 background-size: 20px;
@@ -156,7 +158,7 @@
         position: absolute;
         width: 4px;
         height: 70px;
-        bottom: 30px;
+        bottom: $tool-height;
         right: 40px;
         border-radius: 5px 5px 0 0;
         border-top: 1px solid $color-border;
@@ -188,9 +190,9 @@
     }
 
     .v-tool-time {
-        width: 98px;
+        width: $tool-btn-width;
         height: 100%;
-        line-height: 30px;
+        line-height: $tool-height;
         text-align: center;
         color: #999999;
     }
@@ -198,7 +200,7 @@
     .v-progress-bar {
         box-sizing: border-box;
         height: 100%;
-        padding: 12px 0 12px 10px;
+        padding: ($tool-height - 6) / 2 10px;
         flex: 1;
 
         .v-range {
@@ -286,7 +288,7 @@
 <template>
     <div id="vue-video" ref="box">
         <div class="v-mask" ref="mask" @click="play" @dblclick="screen" @mousemove="tool">
-            <video preload="auto" ref="video">
+            <video preload="metadata" ref="video">
                 <source v-for="data in source" :src="data.src" :type="data.type">
             </video>
             <div class="v-load" ref="load"></div>
@@ -295,6 +297,9 @@
         <transition name="fade">
             <div v-show="ctrl.show" :class="[ 'v-tool', ctrl.isFull ? 'v-tool-full' : '' ]">
                 <button :class="[ ctrl.playing ? 'v-btn-playing' : 'v-btn-paused' ]" @click="play"></button>
+                <div class="v-tool-time">
+                    <span>{{ time.cur }}</span>
+                </div>
                 <div class="v-progress-bar">
                     <div class="v-range" @click="jump">
                         <span class="v-loading" :style="{ width : datas.loading + '%' }"></span>
@@ -304,7 +309,7 @@
                     </div>
                 </div>
                 <div class="v-tool-time">
-                    <span>{{ time.cur }}</span>/<span>{{ time.all }}</span>
+                    <span>{{ time.all }}</span>
                 </div>
                 <button :class="[ 'v-btn-voice', ctrl.isMuted ? 'v-btn-silent' : 'v-btn-volume' ]" @click="muted"></button>
                 <div class="v-voice-bar">
@@ -320,14 +325,9 @@
     </div>
 </template>
 
-<script>
-
+<script lang="babel">
     export default {
         props: {
-            voice : {
-                default : 60,
-                type : String
-            },
             source : {
                 default : null,
                 required : true
@@ -340,6 +340,7 @@
         },
         data () {
             return {
+                voice : 60,
                 time : {
                     cur : "00:00",
                     all : "00:00"
